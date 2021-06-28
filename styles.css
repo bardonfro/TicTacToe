@@ -1,0 +1,55 @@
+/* Color palette: https://coolors.co/1c1d21-a288a6-bb9bb0-d6bfca-f1e3e4-46b1c9-84c0c6
+*/
+
+body {
+    margin: 0;
+    min-width: 300px;
+    background-color:  #1C1D21;
+    color:#F1E3E4;
+}
+
+
+
+#header {
+    text-align: center;
+    display: flex;
+    padding: 1rem;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#header h1 {
+    font-family:cursive;
+    width:100%;
+}
+
+
+
+/*  Footer  */
+
+#footer {
+    text-align: center;
+    position: fixed;
+    bottom: 0px;
+    width:100%;
+    background-color: rgb(66,74,78);
+}
+
+#footer a {
+    color: #F1E3E4;
+}
+
+footer p {
+    margin: .5em;
+}
+
+#footer ul {
+    list-style: none;
+    margin: 1em;
+    padding: 0px;
+}
+
+#footer li {
+    display: inline;
+    margin: 1em;
+}
