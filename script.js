@@ -17,6 +17,11 @@ const game = (function () {
     
     const _maxGameSize = 16;
 
+    const _checkForRun = function(newCell, cohort, runLength) {
+        
+
+    }
+
     const newGame = function (width,height) {
        display.renderGameBoard(width,height);
     }
@@ -39,46 +44,6 @@ const game = (function () {
        //clears game
    }
 
-    /* Create a game board
-        - Input: (integer:width, integer:height)
-        - Clear current game
-        - Create fields and add to array
-        - Pass fields array to display for rendering
-    */
-
-    const _createField = function(x,y) {
-        const field = {x,y,source:"game"};
-        return field;
-    }
-
-    const createGameBoard = function (width, height) {
-        if (!(0 < width < _maxGameSize) && !(0 < height < _maxGameSize)) {
-            console.log("Error: Incorrect game size");
-            return;
-        }
-        
-        boardWrapper.textContent = "";            
-
-        let row = 0;
-        while (row < height) {
-            let column = 0;
-            while (column < width) {
-                _fields.push(_createField(column,row));
-                column++;
-            }
-
-            row++;
-        }
-        
-
-    }
-
-    /* Create a field
-        - Input: coords
-        - Set x and y
-        - Set player to null
-        - Return field
-    */
 
     /* Claim a cell
         - Input: field, player
@@ -111,6 +76,7 @@ const game = (function () {
 const display = (function(){
 
     let _cells = [];
+    let _maxGameSize = 8;
 
     /* Clear the display
         - Delete the tiles
@@ -220,9 +186,11 @@ const display = (function(){
     };
     
     const renderGameBoard = function(width,height) {
+        if (width > _maxGameSize || height > _maxGameSize) {return;}
+
         boardWrapper.textContent = "";            
         _cells = [];
-        
+
         const board = _newElement('div', 'board')
         boardWrapper.appendChild(board);
         
@@ -329,3 +297,63 @@ let times = function (b) {
     b.forEach(function(x) {x = x * 10});
     console.table(b);
 }
+
+let newCell = {x:1,y:1};
+let cohort = [
+    {x:0,y:1},
+    {x:2,y:1},
+    {x:0,y:2},
+    {x:2,y:0},
+   
+]
+
+const checkForRun = function (clickedCell,cohort,length) {
+    const _vectors = [[1,0],[1,1],[0,1],[-1,1]];
+    const _winners = [];
+
+    cohort.push(clickedCell);
+
+    const _invert = function (vector) {
+        return [vector[0] * -1, vector[1] * -1];
+    }
+
+    const _checkNext = function (testSubj, vector) {
+        let next = cohort.filter(function(claimed) {
+            return claimed.x === testSubj.x + vector[0] &&
+            claimed.y === testSubj.y + vector[1];
+        })
+        return next[0];
+    }
+
+    const _checkLine = function(vector) {
+        let current = clickedCell;
+        let line = [];
+        while (_checkNext(current, _invert(vector))) {
+            current = _checkNext(current, _invert(vector));
+        }
+
+        while (current) {
+            line.push(current);
+            current = _checkNext(current, vector);
+        }
+        if (line.length >= length) {
+            return line;
+        }
+    }
+    
+    _vectors.forEach(function(vector) {
+        const line = _checkLine(vector);
+        if (line) {
+            if (line.length > 0) {
+                line.forEach(function(cell) {
+                    _winners.push(cell);
+                })
+            }
+        }
+    });
+console.table(_winners);
+
+}
+
+
+checkForRun(newCell,cohort,3);
