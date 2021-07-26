@@ -14,11 +14,65 @@ const game = (function () {
     let _phase = "";
     let _numOfPlayers = 2;
     let playerSymbols = ["X", "O", "+", "*", "#", "@"];
+    let _activePlayer = {};
     
+    const _winningRun = 3;
     const _maxGameSize = 16;
 
-    const _checkForRun = function(newCell, cohort, runLength) {
+    const _checkForRun = function (clickedCell,cohort,length) {
+        // Vectors are the directions that need to be checked
+        const _vectors = [[1,0],[1,1],[0,1],[-1,1]];
         
+        // A place to put winning cells
+        const _winners = [];
+    
+        // Allows us to back up and find the beginning of the run
+        const _invert = function (vector) {
+            return [vector[0] * -1, vector[1] * -1];
+        }
+    
+        // Checks if the next cell in the line is part of the cohort
+        const _checkNext = function (testSubj, vector) {
+            let next = cohort.filter(function(claimed) {
+                return claimed.x === testSubj.x + vector[0] &&
+                claimed.y === testSubj.y + vector[1];
+            })
+            return next[0];
+        }
+    
+        // For a given vector, what is the length of the run?
+        const _checkLine = function(vector) {
+            let current = clickedCell;
+            let line = [];
+            while (_checkNext(current, _invert(vector))) {
+                current = _checkNext(current, _invert(vector));
+            }
+    
+            while (current) {
+                line.push(current);
+                current = _checkNext(current, vector);
+            }
+            if (line.length >= length) {
+                return line;
+            }
+        }
+        
+        _vectors.forEach(function(vector) {
+            const line = _checkLine(vector);
+            if (line && (line.length > 0)) {
+                line.forEach(function(cell) {
+                    _winners.push(cell);
+                })
+            }
+            
+        });
+    console.table(_winners);
+    
+    }
+
+    const claimCell = function(cell) {
+        _activePlayer.fields.push(cell);
+        _checkForRun(cell,_activePlayer.fields,_winningRun);
 
     }
 
@@ -28,6 +82,7 @@ const game = (function () {
 
     const newPlayer =  function (name, symbol) {
         const player = {name, symbol};
+        player.fields = [];
         _players.push(player);
         return player;
     }
@@ -44,20 +99,6 @@ const game = (function () {
        //clears game
    }
 
-
-    /* Claim a cell
-        - Input: field, player
-        - Verifies that field is unclaimed
-        - Set field.player
-        - Send field, player to display.(mark field)
-        - Check for draw
-        - Check for win
-        - Set game phase to either turn, win, or draw 
-        - Send game phase to display
-    */
-
-    // Checks for win
-
     /* Check for a draw
         - Returns true if all fields have a player
         - Returns fals if not all fields have a pl;ayer
@@ -65,6 +106,7 @@ const game = (function () {
     
     */
    return {
+    claimCell,
     newGame,
     newPlayer,   
     numOfPlayers,
@@ -95,7 +137,7 @@ const display = (function(){
         if (cell.classList.contains("claimed")) {return;}
         const coords = [cell.dataset.column, cell.dataset.row];
         
-        console.log(coords);
+        game.claimCell({x:coords[0],y:coords[1]});
     }
 
     const initialize = function () {
@@ -298,62 +340,17 @@ let times = function (b) {
     console.table(b);
 }
 
-let newCell = {x:1,y:1};
+let clickedCell = {x:1,y:1};
 let cohort = [
     {x:0,y:1},
     {x:2,y:1},
     {x:0,y:2},
     {x:2,y:0},
+    {x:1,y:1},
    
 ]
 
-const checkForRun = function (clickedCell,cohort,length) {
-    const _vectors = [[1,0],[1,1],[0,1],[-1,1]];
-    const _winners = [];
-
-    cohort.push(clickedCell);
-
-    const _invert = function (vector) {
-        return [vector[0] * -1, vector[1] * -1];
-    }
-
-    const _checkNext = function (testSubj, vector) {
-        let next = cohort.filter(function(claimed) {
-            return claimed.x === testSubj.x + vector[0] &&
-            claimed.y === testSubj.y + vector[1];
-        })
-        return next[0];
-    }
-
-    const _checkLine = function(vector) {
-        let current = clickedCell;
-        let line = [];
-        while (_checkNext(current, _invert(vector))) {
-            current = _checkNext(current, _invert(vector));
-        }
-
-        while (current) {
-            line.push(current);
-            current = _checkNext(current, vector);
-        }
-        if (line.length >= length) {
-            return line;
-        }
-    }
-    
-    _vectors.forEach(function(vector) {
-        const line = _checkLine(vector);
-        if (line) {
-            if (line.length > 0) {
-                line.forEach(function(cell) {
-                    _winners.push(cell);
-                })
-            }
-        }
-    });
-console.table(_winners);
-
-}
 
 
-checkForRun(newCell,cohort,3);
+
+checkForRun(clickedCell,cohort,3);
