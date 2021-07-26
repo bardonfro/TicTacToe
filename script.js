@@ -1,5 +1,8 @@
 'use strict'
 
+// DOM Elements
+const boardWrapper = document.querySelector('#board-wrapper');
+
 // Event listeners for buttons
 const btnReset = {};
 
@@ -9,18 +12,26 @@ const game = (function () {
     let _fields = [];
     let _players = [];
     let _phase = "";
-    let numOfPlayers = 2;
+    let _numOfPlayers = 2;
     let playerSymbols = ["X", "O", "+", "*", "#", "@"];
+    
+    const _maxGameSize = 16;
 
+    const logFields = function () {
+            console.table(_fields);
+    }
 
     /* New Game
         - Input: 
         - Clear game
 
     */
-
     const logPlayers = function () {
         console.table(_players);
+    }
+   
+    const newGame = function (width,height) {
+       display.renderGameBoard(width,height);
     }
 
     const newPlayer =  function (name, symbol) {
@@ -29,17 +40,49 @@ const game = (function () {
         return player;
     }
 
+    const numOfPlayers = function() {
+        return _numOfPlayers;
+    }
+
     /* Clear
         - Clear fields and players arrays
         - Signal the display to clear
     */
+   const _clearGame = function () {
+       //clears game
+   }
 
     /* Create a game board
-        - Input: size
+        - Input: (integer:width, integer:height)
         - Clear current game
         - Create fields and add to array
         - Pass fields array to display for rendering
     */
+
+    const _createField = function(x,y) {
+        const field = {x,y,source:"game"};
+        return field;
+    }
+
+    const createGameBoard = function (width, height) {
+        _clearGame();
+        if (!(0 < width < _maxGameSize) && !(0 < height < _maxGameSize)) {
+            console.log("Error: Incorrect game size");
+            return;
+        }
+        let row = 0;
+        while (row < height) {
+            let column = 0;
+            while (column < width) {
+                _fields.push(_createField(column,row));
+                column++;
+            }
+
+            row++;
+        }
+        
+
+    }
 
     /* Create a field
         - Input: coords
@@ -69,15 +112,18 @@ const game = (function () {
     */
    return {
     logPlayers,
+    newGame,
     newPlayer,   
     numOfPlayers,
     playerSymbols,
+    logFields,
    }
 })();
 
 //Module
 const display = (function(){
 
+    let _cells = [];
 
     /* Clear the display
         - Delete the tiles
@@ -91,9 +137,31 @@ const display = (function(){
         - Assigns event listener to form submit buttons
     */
 
-    const initialize = function () {
-        renderPlayerTiles(game.numOfPlayers);
+    const clickCell = function (e) {
+        const cell = e.target;
+        const coords = [cell.dataset.column, cell.dataset.row];
+        console.log(coords);
     }
+
+    const initialize = function () {
+        renderPlayerTiles(game.numOfPlayers());
+    };
+
+    const markCell = function (x,y,symbol) {
+        let cell = false;
+        let i = 0;
+        while ((i <= _cells.length) && !(cell)) {
+            if (Number(_cells[i].dataset.column) === x &&
+                Number(_cells[i].dataset.row) === y ) {
+                    cell = _cells[i];
+            }
+        }
+        if (!cell) {return;}
+        cell.classList.add('claimed');
+        cell.textContent = symbol;
+    }
+           
+
     
     const _newElement = function(tag, classes) {
         const element = document.createElement(tag);
@@ -127,6 +195,7 @@ const display = (function(){
 
             game.playerSymbols.slice(0,game.numOfPlayers).forEach(function (symbol) {
                 const option = document.createElement('option');
+                option.classList = 'player-symbol-choice';
                 option.value = option.textContent = symbol;
                 symbolField.appendChild(option);
             })
@@ -150,6 +219,35 @@ const display = (function(){
     };
 
 
+    const _removeSymbolOption = function (sym) {
+        const options = document.querySelectorAll('.player-symbol-choice');
+        options.forEach(function(element) {
+            if (element.value === sym) {
+                element.parentElement.removeChild(element);
+            }
+
+        })
+    };
+    
+    const renderGameBoard = function(width,height) {
+        const board = _newElement('div', 'board')
+        boardWrapper.appendChild(board);
+        
+        for (let i = 0; i < width; i++){
+            const column = _newElement('div', 'game-column');
+            board.appendChild(column);
+            for (let j = 0; j < height; j++) {
+                const cell = _newElement('div', 'cell');
+                cell.dataset.column = i;
+                cell.dataset.row = j;
+                cell.textContent = i + "," + j;
+                cell.addEventListener('click',display.clickCell)
+                column.appendChild(cell);
+                _cells.push(cell);
+            }
+        }
+   }
+
     const renderPlayerTiles = function (num) {
         let count = 0;
         const playerWrapper = document.querySelector("#player-wrapper");
@@ -157,9 +255,9 @@ const display = (function(){
             playerWrapper.appendChild(_newPlayerTile());
             ++count;
         }
-    }
+    };
 
-    const submitForm = function (e) {
+    const submitNewPlayer = function (e) {
         const form = e.srcElement;
         const name = form[0].value;
         const symbol = form[1].value;
@@ -172,8 +270,9 @@ const display = (function(){
         tile.querySelector('.player-symbol').classList.remove('no-display');
         
         form.classList.add('no-display');
+        _removeSymbolOption(symbol);
 
-    }
+    };
 
     /* Create new player
         - Trigger: New player form submit click
@@ -183,16 +282,6 @@ const display = (function(){
         - Changes the new player tile to a player tile
     */
     
-    /* Create a gameboard display
-        - Input: array of fields, array of players
-        - clear existing board
-        - Create player displays
-        - for each field, create a tile
-        - determine DOM order of tiles
-        - apply dataset.coord to each?
-        - apply appropriate classes
-    */
-
     /* Place a symbol in a tile
         - Input: field, player
         - looks up player symbol
@@ -219,16 +308,31 @@ const display = (function(){
     */
 
     return {
+        clickCell,
         initialize,
+        markCell,
+        renderGameBoard,
         renderPlayerTiles,
-        submitForm,
+        submitForm: submitNewPlayer,
     }
 })();
 
 display.initialize();
+game.newGame(3,3);
 
 //Development hacks and shortuts
 
 const who = function() {
     game.logPlayers();
+}
+
+let arr = [1,2,3]
+
+let mult = function(a) {
+    times([...arr]);
+    console.table(arr);
+}
+let times = function (b) {
+    b.forEach(function(x) {x = x * 10});
+    console.table(b);
 }
