@@ -17,19 +17,6 @@ const game = (function () {
     
     const _maxGameSize = 16;
 
-    const logFields = function () {
-            console.table(_fields);
-    }
-
-    /* New Game
-        - Input: 
-        - Clear game
-
-    */
-    const logPlayers = function () {
-        console.table(_players);
-    }
-   
     const newGame = function (width,height) {
        display.renderGameBoard(width,height);
     }
@@ -65,11 +52,13 @@ const game = (function () {
     }
 
     const createGameBoard = function (width, height) {
-        _clearGame();
         if (!(0 < width < _maxGameSize) && !(0 < height < _maxGameSize)) {
             console.log("Error: Incorrect game size");
             return;
         }
+        
+        boardWrapper.textContent = "";            
+
         let row = 0;
         while (row < height) {
             let column = 0;
@@ -111,12 +100,10 @@ const game = (function () {
     
     */
    return {
-    logPlayers,
     newGame,
     newPlayer,   
     numOfPlayers,
     playerSymbols,
-    logFields,
    }
 })();
 
@@ -139,7 +126,9 @@ const display = (function(){
 
     const clickCell = function (e) {
         const cell = e.target;
+        if (cell.classList.contains("claimed")) {return;}
         const coords = [cell.dataset.column, cell.dataset.row];
+        
         console.log(coords);
     }
 
@@ -155,6 +144,7 @@ const display = (function(){
                 Number(_cells[i].dataset.row) === y ) {
                     cell = _cells[i];
             }
+            i++;
         }
         if (!cell) {return;}
         cell.classList.add('claimed');
@@ -230,6 +220,9 @@ const display = (function(){
     };
     
     const renderGameBoard = function(width,height) {
+        boardWrapper.textContent = "";            
+        _cells = [];
+        
         const board = _newElement('div', 'board')
         boardWrapper.appendChild(board);
         
