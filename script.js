@@ -70,14 +70,12 @@ const game = (function () {
 
     const claimField = function(field) {
         _activePlayer.fields.push(field);
-        let winners = _checkForRun(field,_activePlayer.fields,_winningRun);
-        if (winners.length > 0) {
-            console.log("Winners:")
-            console.log(winners);
-        }
-
         display.markCell(field,_activePlayer.symbol)
-
+        
+        let arrWinners = _checkForRun(field,_activePlayer.fields,_winningRun);
+        if (arrWinners.length > 0) {
+            display.markWinners(arrWinners);
+        }
     }
 
     const newGame = function (width,height) {
@@ -149,6 +147,14 @@ const display = (function(){
         renderPlayerTiles(game.numOfPlayers());
     };
 
+    /* Marks a cell as claimed by a player
+        - Sets text content to player's symbol
+        - Adds "claimed" class to cell
+        - Input:
+            - field object with properties "x" and "y"
+            - symbol string
+    
+    */
     const markCell = function (field,symbol) {
         let cell = false;
         let i = 0;
@@ -162,6 +168,22 @@ const display = (function(){
         if (!cell) {return;}
         cell.classList.add('claimed');
         cell.textContent = symbol;
+    }
+
+    /* Adds "winner" class to winning cells
+        -Input: array of objects with properties "x" and "y"
+        -Also uses display._cells array
+
+    */
+    const markWinners = function(arrWinners) {
+        arrWinners.forEach(function(field) {
+            const cell = _cells.filter(function(cell){
+                return Number(cell.dataset.column) === field.x && 
+                Number(cell.dataset.row) === field.y
+            })[0]
+            cell.classList.add("winner");
+
+        })
     }
            
     const _newElement = function(tag, classes) {
@@ -317,6 +339,7 @@ const display = (function(){
         clickCell,
         initialize,
         markCell,
+        markWinners,
         renderGameBoard,
         renderPlayerTiles,
         submitForm: submitNewPlayer,
