@@ -202,19 +202,19 @@ const display = (function(){
             header.textContent = "Add Player"
             form.appendChild(header);
 
-        const nameLabel = document.createElement('label');
-            nameLabel.htmlFor = "player-name";
-            nameLabel.textContent = "Player Name";
-        form.appendChild(nameLabel);
         const nameField = document.createElement('input');
             nameField.required = true;
             nameField.name = "player-name";
+            nameField.placeholder = "Enter Name"
         form.appendChild(nameField);
         
+        const symbolWrapper = _newElement('div', 'symbol-wrapper');
+        form.appendChild(symbolWrapper);
+
         const symbolLabel = document.createElement('label');
             symbolLabel.htmlFor = "player-symbol";
             symbolLabel.textContent = "Symbol";
-        form.appendChild(symbolLabel);
+        symbolWrapper.appendChild(symbolLabel);
 
         const symbolField = document.createElement('select');
             symbolField.required = true;
@@ -226,7 +226,7 @@ const display = (function(){
                 option.value = option.textContent = symbol;
                 symbolField.appendChild(option);
             })
-        form.appendChild(symbolField);
+        symbolWrapper.appendChild(symbolField);
 
         const btnSubmit = document.createElement('input');
             btnSubmit.type = "submit";
@@ -241,7 +241,7 @@ const display = (function(){
         const tile = _newElement('div', 'player-tile');
         tile.appendChild(_newElement('h3', 'player-name no-display'));
         tile.appendChild(_newElement('h4','player-symbol no-display'));
-        tile.appendChild(_newPlayerForm());
+        tile.appendChild(_newElement('div','form-wrapper')).appendChild(_newPlayerForm());
         return tile;
     };
 
@@ -295,13 +295,13 @@ const display = (function(){
         const symbol = form[1].value;
 
         const player = game.newPlayer(name, symbol);
-        const tile = form.parentElement;
+        const tile = form.parentElement.parentElement;
         tile.querySelector('.player-name').textContent = player.name;
         tile.querySelector('.player-symbol').textContent = player.symbol;
         tile.querySelector('.player-name').classList.remove('no-display');
         tile.querySelector('.player-symbol').classList.remove('no-display');
         
-        form.classList.add('no-display');
+        form.parentElement.classList.add('no-display');
         _removeSymbolOption(symbol);
 
     };
