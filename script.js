@@ -198,6 +198,10 @@ const display = (function(){
         form.setAttribute("onSubmit", "return false");
         form.addEventListener('submit', display.submitForm);
 
+        const header = _newElement('h3', "form-header");
+            header.textContent = "Add Player"
+            form.appendChild(header);
+
         const nameLabel = document.createElement('label');
             nameLabel.htmlFor = "player-name";
             nameLabel.textContent = "Player Name";
@@ -216,7 +220,7 @@ const display = (function(){
             symbolField.required = true;
             symbolField.name = "player-symbol";
 
-            game.playerSymbols.slice(0,game.numOfPlayers).forEach(function (symbol) {
+            game.playerSymbols.slice(0,game.numOfPlayers()).forEach(function (symbol) {
                 const option = document.createElement('option');
                 option.classList = 'player-symbol-choice';
                 option.value = option.textContent = symbol;
@@ -355,3 +359,9 @@ const who = function() {
     game.logPlayers();
 }
 
+const dummy = function(){
+    const form = document.querySelector('.new-player-form');
+    form[0].value = "Humperdink";
+    const e = {srcElement: form};
+    display.submitForm(e);
+}()
