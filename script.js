@@ -14,12 +14,12 @@ const game = (function () {
     let _phase = "";
     let _numOfPlayers = 2;
     let playerSymbols = ["X", "O", "+", "*", "#", "@"];
-    let _activePlayer = {};
+    let _activePlayer = {fields:[],symbol:"X"};
     
     const _winningRun = 3;
     const _maxGameSize = 16;
 
-    const _checkForRun = function (clickedCell,cohort,length) {
+    const _checkForRun = function (clickedCell,cohort,winningRun) {
         // Vectors are the directions that need to be checked
         const _vectors = [[1,0],[1,1],[0,1],[-1,1]];
         
@@ -32,10 +32,10 @@ const game = (function () {
         }
     
         // Checks if the next cell in the line is part of the cohort
-        const _checkNext = function (testSubj, vector) {
+        const _isNextClaimed = function (current, vector) {
             let next = cohort.filter(function(claimed) {
-                return claimed.x === testSubj.x + vector[0] &&
-                claimed.y === testSubj.y + vector[1];
+                return claimed.x === current.x + vector[0] &&
+                claimed.y === current.y + vector[1];
             })
             return next[0];
         }
@@ -44,35 +44,39 @@ const game = (function () {
         const _checkLine = function(vector) {
             let current = clickedCell;
             let line = [];
-            while (_checkNext(current, _invert(vector))) {
-                current = _checkNext(current, _invert(vector));
+            while (_isNextClaimed(current, _invert(vector))) {
+                current = _isNextClaimed(current, _invert(vector));
             }
     
             while (current) {
                 line.push(current);
-                current = _checkNext(current, vector);
+                current = _isNextClaimed(current, vector);
             }
-            if (line.length >= length) {
-                return line;
-            }
+            return line;
         }
         
         _vectors.forEach(function(vector) {
             const line = _checkLine(vector);
-            if (line && (line.length > 0)) {
+            if (line.length >= winningRun) {
                 line.forEach(function(cell) {
                     _winners.push(cell);
                 })
             }
             
         });
-    console.table(_winners);
+    return _winners;
     
     }
 
-    const claimCell = function(cell) {
-        _activePlayer.fields.push(cell);
-        _checkForRun(cell,_activePlayer.fields,_winningRun);
+    const claimField = function(field) {
+        _activePlayer.fields.push(field);
+        let winners = _checkForRun(field,_activePlayer.fields,_winningRun);
+        if (winners.length > 0) {
+            console.log("Winners:")
+            console.log(winners);
+        }
+
+        display.markCell(field,_activePlayer.symbol)
 
     }
 
@@ -106,7 +110,7 @@ const game = (function () {
     
     */
    return {
-    claimCell,
+    claimField,
     newGame,
     newPlayer,   
     numOfPlayers,
@@ -135,21 +139,22 @@ const display = (function(){
     const clickCell = function (e) {
         const cell = e.target;
         if (cell.classList.contains("claimed")) {return;}
-        const coords = [cell.dataset.column, cell.dataset.row];
+        const coords = [Number(cell.dataset.column), Number(cell.dataset.row)];
         
-        game.claimCell({x:coords[0],y:coords[1]});
+        const field = {x:coords[0],y:coords[1]};
+        game.claimField(field);
     }
 
     const initialize = function () {
         renderPlayerTiles(game.numOfPlayers());
     };
 
-    const markCell = function (x,y,symbol) {
+    const markCell = function (field,symbol) {
         let cell = false;
         let i = 0;
-        while ((i <= _cells.length) && !(cell)) {
-            if (Number(_cells[i].dataset.column) === x &&
-                Number(_cells[i].dataset.row) === y ) {
+        while ((i < _cells.length) && !(cell)) {
+            if (Number(_cells[i].dataset.column) === field.x &&
+                Number(_cells[i].dataset.row) === field.y ) {
                     cell = _cells[i];
             }
             i++;
@@ -159,8 +164,6 @@ const display = (function(){
         cell.textContent = symbol;
     }
            
-
-    
     const _newElement = function(tag, classes) {
         const element = document.createElement(tag);
         element.classList = classes;
@@ -340,17 +343,3 @@ let times = function (b) {
     console.table(b);
 }
 
-let clickedCell = {x:1,y:1};
-let cohort = [
-    {x:0,y:1},
-    {x:2,y:1},
-    {x:0,y:2},
-    {x:2,y:0},
-    {x:1,y:1},
-   
-]
-
-
-
-
-checkForRun(clickedCell,cohort,3);

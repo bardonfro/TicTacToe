@@ -57,6 +57,10 @@ body {
     border: 1px solid white;
 }
 
+.board .cell.claimed {
+    background-color: gray;
+}
+
 
 /*  Footer  */
 
