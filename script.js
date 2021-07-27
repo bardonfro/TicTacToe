@@ -355,14 +355,3 @@ const who = function() {
     game.logPlayers();
 }
 
-let arr = [1,2,3]
-
-let mult = function(a) {
-    times([...arr]);
-    console.table(arr);
-}
-let times = function (b) {
-    b.forEach(function(x) {x = x * 10});
-    console.table(b);
-}
-
