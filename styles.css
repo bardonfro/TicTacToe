@@ -16,6 +16,7 @@ body {
 
 #content {
     flex: 1 0 auto;
+    padding-bottom: 3rem;
 }
 
 
@@ -36,6 +37,7 @@ body {
 #player-wrapper {
     display: flex;
     justify-content: space-around;
+    padding: 3rem;
 }
 
 .player-tile {
