@@ -105,6 +105,10 @@ body {
     border: 1px solid white;
 }
 
+.board .cell.hover {
+    background-color: gray;
+}
+
 .board .cell.claimed {
     background-color: gray;
 }

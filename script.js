@@ -107,8 +107,8 @@ const game = (function () {
         return _numOfPlayers;
     }
 
-    const returnActivePlayer = function() {
-        return _activePlayer;
+    const returnActiveSymbol = function() {
+        return _activePlayer.symbol;
     }
 
     const _setActivePlayer = function(player) {
@@ -139,6 +139,7 @@ const game = (function () {
     newPlayer,   
     numOfPlayers,
     playerSymbols,
+    returnActiveSymbol,
    }
 })();
 
@@ -219,7 +220,24 @@ const display = (function(){
         })
         _gameOver = true;
     }
-           
+    
+    const _mouseOverCell = function(e) {
+        const cell = e.target;
+        if (cell.classList.contains('claimed')) {return;}
+
+        cell.classList.add('hover')
+        cell.textContent = game.returnActiveSymbol();
+    }
+
+    const _mouseOutCell = function (e) {
+        const cell = e.target;
+        if (cell.classList.contains('claimed')) {return;}
+
+        cell.classList.remove('hover')
+        cell.textContent ='';
+
+    }
+
     const _newElement = function(tag, classes) {
         const element = document.createElement(tag);
         element.classList = classes;
@@ -306,7 +324,9 @@ const display = (function(){
                 const cell = _newElement('div', 'cell');
                 cell.dataset.column = i;
                 cell.dataset.row = j;
-                cell.addEventListener('click',display.clickCell)
+                cell.addEventListener('click',display.clickCell);
+                cell.addEventListener('mouseover', _mouseOverCell);
+                cell.addEventListener('mouseout', _mouseOutCell);
                 column.appendChild(cell);
                 _cells.push(cell);
             }
