@@ -9,12 +9,12 @@ const btnReset = {};
 
 //Module
 const game = (function () {
-    let _fields = [];
+    let _boardWidth = 3;
+    let _boardHeight = 3;
     let _players = [];
-    let _phase = "";
     let _numOfPlayers = 2;
     let playerSymbols = ["X", "O", "+", "*", "#", "@"];
-    let _activePlayer = {fields:[],symbol:"X"};
+    let _activePlayer = {};
     
     const _winningRun = 3;
     const _maxGameSize = 16;
@@ -75,22 +75,48 @@ const game = (function () {
         let arrWinners = _checkForRun(field,_activePlayer.fields,_winningRun);
         if (arrWinners.length > 0) {
             display.markWinners(arrWinners);
+        } else {
+            _nextPlayer();
         }
     }
 
-    const newGame = function (width,height) {
-       display.renderGameBoard(width,height);
+    const newGame = function () {
+        if (!(_numOfPlayers === _players.length)) {return;}
+        _players.forEach(function(player) {
+            player.fields = [];
+        })
+       display.renderGameBoard(_boardWidth,_boardHeight);
+       _setActivePlayer(_players[0]);
     }
 
-    const newPlayer =  function (name, symbol) {
+    const newPlayer =  function (name, symbol, tile) {
         const player = {name, symbol};
         player.fields = [];
+        player.tile = tile;
         _players.push(player);
-        return player;
+    }
+
+    const _nextPlayer = function() {
+        const current = _players[0];
+        _players = _players.slice(1);
+        _players.push(current);
+        _setActivePlayer(_players[0])
     }
 
     const numOfPlayers = function() {
         return _numOfPlayers;
+    }
+
+    const returnActivePlayer = function() {
+        return _activePlayer;
+    }
+
+    const _setActivePlayer = function(player) {
+        _players.forEach(function(player) {
+            player.tile.classList.remove('active-player');
+        })
+        player.tile.classList.add('active-player');
+        _activePlayer = player;
     }
 
     /* Clear
@@ -121,6 +147,7 @@ const display = (function(){
 
     let _cells = [];
     let _maxGameSize = 8;
+    let _gameOver = false;
 
     /* Clear the display
         - Delete the tiles
@@ -136,15 +163,22 @@ const display = (function(){
 
     const clickCell = function (e) {
         const cell = e.target;
-        if (cell.classList.contains("claimed")) {return;}
+        if (cell.classList.contains("claimed") ||
+            _gameOver) {return;}
+
         const coords = [Number(cell.dataset.column), Number(cell.dataset.row)];
         
         const field = {x:coords[0],y:coords[1]};
         game.claimField(field);
     }
 
+    const _clickStartGame = function () {
+        console.log("Start Game");
+    }
+
     const initialize = function () {
-        renderPlayerTiles(game.numOfPlayers());
+        _renderPlayerTiles(game.numOfPlayers());
+        _renderGameOptions();
     };
 
     /* Marks a cell as claimed by a player
@@ -182,8 +216,8 @@ const display = (function(){
                 Number(cell.dataset.row) === field.y
             })[0]
             cell.classList.add("winner");
-
         })
+        _gameOver = true;
     }
            
     const _newElement = function(tag, classes) {
@@ -272,15 +306,38 @@ const display = (function(){
                 const cell = _newElement('div', 'cell');
                 cell.dataset.column = i;
                 cell.dataset.row = j;
-                cell.textContent = i + "," + j;
                 cell.addEventListener('click',display.clickCell)
                 column.appendChild(cell);
                 _cells.push(cell);
             }
         }
-   }
+        _gameOver = false;
+    }
 
-    const renderPlayerTiles = function (num) {
+    const _renderGameOptions = function () {
+        const optionsPanel = _newElement('div', 'options-panel');
+        document.querySelector('#options-wrapper').appendChild(optionsPanel);
+
+        const numberOfPlayersWrapper = _newElement('div', 'options-wrapper');
+            //optionsPanel.appendChild(numberOfPlayersWrapper);
+            const numLabel = _newElement('label', '');
+                numLabel.htmlFor = "number-players"
+                numLabel.textContent = "Number of Players";
+                numberOfPlayersWrapper.appendChild(numLabel);
+            const numSelect = _newElement('select','num-players-select');
+                //Unfinished
+
+        
+
+        
+        
+        const btnStartGame = _newElement('div', 'button start-game-button');
+            btnStartGame.textContent = "New Game";
+            btnStartGame.addEventListener('click', game.newGame)
+            optionsPanel.appendChild(btnStartGame);
+    }
+
+    const _renderPlayerTiles = function (num) {
         let count = 0;
         const playerWrapper = document.querySelector("#player-wrapper");
         while (count < num) {
@@ -293,11 +350,11 @@ const display = (function(){
         const form = e.srcElement;
         const name = form[0].value;
         const symbol = form[1].value;
-
-        const player = game.newPlayer(name, symbol);
         const tile = form.parentElement.parentElement;
-        tile.querySelector('.player-name').textContent = player.name;
-        tile.querySelector('.player-symbol').textContent = player.symbol;
+
+        const player = game.newPlayer(name, symbol,tile);
+        tile.querySelector('.player-name').textContent = name;
+        tile.querySelector('.player-symbol').textContent = symbol;
         tile.querySelector('.player-name').classList.remove('no-display');
         tile.querySelector('.player-symbol').classList.remove('no-display');
         
@@ -345,23 +402,8 @@ const display = (function(){
         markCell,
         markWinners,
         renderGameBoard,
-        renderPlayerTiles,
         submitForm: submitNewPlayer,
     }
 })();
 
 display.initialize();
-game.newGame(3,3);
-
-//Development hacks and shortuts
-
-const who = function() {
-    game.logPlayers();
-}
-
-const dummy = function(){
-    const form = document.querySelector('.new-player-form');
-    form[0].value = "Humperdink";
-    const e = {srcElement: form};
-    display.submitForm(e);
-}()

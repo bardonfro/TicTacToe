@@ -40,6 +40,11 @@ body {
     padding:1rem;
 }
 
+.player-tile.active-player {
+    transform: scale(1.2);
+
+}
+
 .player-tile .form-wrapper{
     height: 100%;
     width: 100%;
@@ -75,11 +80,13 @@ body {
     flex-direction: column-reverse;
     justify-content: center;
     flex-grow: 1;
+    flex-basis: 0;
 }
 
 .board .cell {
     margin: .5rem;
     flex-grow: 1;
+    flex-basis: 0;
     display:flex;
     align-items: center;
     justify-content: center;
@@ -95,6 +102,16 @@ body {
     background-color: green;
 }
 
+#options-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top:1rem;
+}
+
+.start-game-button {
+    padding:1em;
+    border: .1em solid white;
+}
 
 /*  Footer  */
 
