@@ -13,6 +13,7 @@ const game = (function () {
     let _boardHeight = 3;
     let _players = [];
     let _numOfPlayers = 2;
+    let over = false;
     let playerSymbols = ["X", "O", "+", "*", "#", "@"];
     let _activePlayer = {};
     
@@ -75,6 +76,7 @@ const game = (function () {
         let arrWinners = _checkForRun(field,_activePlayer.fields,_winningRun);
         if (arrWinners.length > 0) {
             display.markWinners(arrWinners);
+            over = true;
         } else {
             _nextPlayer();
         }
@@ -87,6 +89,7 @@ const game = (function () {
         })
        display.renderGameBoard(_boardWidth,_boardHeight);
        _setActivePlayer(_players[0]);
+       over = false;
     }
 
     const newPlayer =  function (name, symbol, tile) {
@@ -138,6 +141,7 @@ const game = (function () {
     newGame,
     newPlayer,   
     numOfPlayers,
+    over,
     playerSymbols,
     returnActiveSymbol,
    }
@@ -148,7 +152,6 @@ const display = (function(){
 
     let _cells = [];
     let _maxGameSize = 8;
-    let _gameOver = false;
 
     /* Clear the display
         - Delete the tiles
@@ -165,7 +168,7 @@ const display = (function(){
     const clickCell = function (e) {
         const cell = e.target;
         if (cell.classList.contains("claimed") ||
-            _gameOver) {return;}
+            game.over) {return;}
 
         const coords = [Number(cell.dataset.column), Number(cell.dataset.row)];
         
@@ -218,12 +221,13 @@ const display = (function(){
             })[0]
             cell.classList.add("winner");
         })
-        _gameOver = true;
+        game.over = true;
     }
     
     const _mouseOverCell = function(e) {
         const cell = e.target;
-        if (cell.classList.contains('claimed')) {return;}
+        if (cell.classList.contains('claimed') ||
+            game.over) {return;}
 
         cell.classList.add('hover')
         cell.textContent = game.returnActiveSymbol();
@@ -231,7 +235,8 @@ const display = (function(){
 
     const _mouseOutCell = function (e) {
         const cell = e.target;
-        if (cell.classList.contains('claimed')) {return;}
+        if (cell.classList.contains('claimed') ||
+            game.over) {return;}
 
         cell.classList.remove('hover')
         cell.textContent ='';
@@ -331,7 +336,7 @@ const display = (function(){
                 _cells.push(cell);
             }
         }
-        _gameOver = false;
+        game.over = false;
     }
 
     const _renderGameOptions = function () {
