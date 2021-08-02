@@ -15,6 +15,7 @@ const game = (function () {
     let _numOfPlayers = 2;
     let over = false;
     let playerSymbols = ["X", "O", "+", "*", "#", "@"];
+    let ready = false;
     let _activePlayer = {};
     
     const _winningRun = 3;
@@ -112,6 +113,9 @@ const game = (function () {
         player.fields = [];
         player.tile = tile;
         _players.push(player);
+        if (_players.length === _numOfPlayers) {
+            game.ready = true;
+        }
     }
 
     const _nextPlayer = function() {
@@ -161,6 +165,7 @@ const game = (function () {
     numOfPlayers,
     over,
     playerSymbols,
+    ready,
     returnActiveSymbol,
    }
 })();
@@ -374,7 +379,7 @@ const display = (function(){
 
         
         
-        const btnStartGame = _newElement('div', 'button start-game-button');
+        const btnStartGame = _newElement('div', 'button start-game-button no-display');
             btnStartGame.textContent = "New Game";
             btnStartGame.addEventListener('click', game.newGame)
             optionsPanel.appendChild(btnStartGame);
@@ -407,6 +412,9 @@ const display = (function(){
         
         form.parentElement.classList.add('no-display');
         _removeSymbolOption(symbol);
+        if (game.ready) {
+            document.querySelector('.start-game-button').classList.remove('no-display');
+        }
 
     };
 
