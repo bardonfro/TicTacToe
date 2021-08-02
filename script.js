@@ -88,7 +88,7 @@ const game = (function () {
         
         let arrWinners = _checkForRun(field,_activePlayer.fields,_winningRun);
         if (arrWinners.length > 0) {
-            display.markWinners(arrWinners);
+            display.markWinners(arrWinners,_activePlayer.tile);
             over = true;
         } else if (_checkForDraw()) {
             _setActivePlayer(null);
@@ -176,18 +176,6 @@ const display = (function(){
     let _cells = [];
     let _maxGameSize = 8;
 
-    /* Clear the display
-        - Delete the tiles
-        - Delete the player display
-        - Display game start options
-    */
-    
-    /* Create new player tiles
-        - Input: number of players
-        - Creates tiles with forms for player name and symbol
-        - Assigns event listener to form submit buttons
-    */
-
     const clickCell = function (e) {
         const cell = e.target;
         if (cell.classList.contains("claimed") ||
@@ -199,8 +187,12 @@ const display = (function(){
         game.claimField(field);
     }
 
-    const _clickStartGame = function () {
-        console.log("Start Game");
+    const _clickNewGame = function () {
+        game.newGame();
+        document.querySelectorAll('.winner').forEach(function(el) {
+            el.classList.remove('winner');
+        })
+
     }
 
     const initialize = function () {
@@ -236,7 +228,7 @@ const display = (function(){
         -Also uses display._cells array
 
     */
-    const markWinners = function(arrWinners) {
+    const markWinners = function(arrWinners,playerTile) {
         arrWinners.forEach(function(field) {
             const cell = _cells.filter(function(cell){
                 return Number(cell.dataset.column) === field.x && 
@@ -244,6 +236,7 @@ const display = (function(){
             })[0]
             cell.classList.add("winner");
         })
+        playerTile.classList.add('winner');
         game.over = true;
     }
     
@@ -375,13 +368,10 @@ const display = (function(){
             const numSelect = _newElement('select','num-players-select');
                 //Unfinished
 
-        
 
-        
-        
-        const btnStartGame = _newElement('button', 'button start-game-button no-display');
+            const btnStartGame = _newElement('button', 'button start-game-button no-display');
             btnStartGame.textContent = "New Game";
-            btnStartGame.addEventListener('click', game.newGame)
+            btnStartGame.addEventListener('click', _clickNewGame)
             optionsPanel.appendChild(btnStartGame);
     }
 
@@ -417,39 +407,6 @@ const display = (function(){
         }
 
     };
-
-    /* Create new player
-        - Trigger: New player form submit click
-        - Gets information from form
-        - Submits information to game.newPlayer
-        - Associates tile and player
-        - Changes the new player tile to a player tile
-    */
-    
-    /* Place a symbol in a tile
-        - Input: field, player
-        - looks up player symbol
-        - looks us field's tile
-        - sets tile text content to symbol
-        - changes classes as needed
-    */
-
-    /* Illuminate a winning set
-        - Input: winning fields, player
-        - Sets class of corresponding tiles to win class
-        - Highlights player tile, displays win message
-        - Displays appropriate player action buttons 
-    */
-
-    /* Signal game when a cell has been clicked
-        -Passes tile.field to game logic
-    */
-
-    /* Set game phase
-        - Input:
-        - Sets
-
-    */
 
     return {
         clickCell,

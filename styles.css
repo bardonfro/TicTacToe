@@ -21,6 +21,7 @@ button {
     padding: .3rem 2rem;
     margin: 1em;
     text-decoration: none;
+    font-size: 1rem;
     background: none;
     color: inherit;
     font-family: inherit;
@@ -74,10 +75,9 @@ button:active {
 }
 
 .player-tile {
+    min-width: 10em;
     border: 1px white solid;
     border-radius: 2em;
-    height: 8rem;
-    width: 12.5rem;
     box-sizing: border-box;
     text-align: center;
     display: flex;
@@ -85,6 +85,11 @@ button:active {
     justify-content: space-around;
     padding:1rem;
     margin: 2rem;
+}
+
+.player-tile h4 {
+    font-size: 2em;
+    margin: .4em;
 }
 
 .player-tile.active-player {
@@ -103,6 +108,14 @@ button:active {
     flex-direction: column;
     justify-content: space-around;
 
+}
+
+.player-tile form input {
+    margin: 1em;
+}
+
+.player-tile form label {
+    margin-right: .6em;
 }
 
 .player-tile .form-header {
@@ -150,7 +163,8 @@ button:active {
     border: none;
 }
 
-.board .cell.winner {
+.board .cell.winner,
+.player-tile.winner {
     background-color: green;
 }
 
