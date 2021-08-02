@@ -182,7 +182,7 @@ button:active {
     flex-shrink: 0;
     bottom: 0px;
     width:100%;
-    background-color: rgb(66,74,78);
+    background-color: gray;
 }
 
 #footer a {
