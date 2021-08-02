@@ -308,9 +308,9 @@ const display = (function(){
             })
         symbolWrapper.appendChild(symbolField);
 
-        const btnSubmit = document.createElement('input');
+        const btnSubmit = document.createElement('button');
             btnSubmit.type = "submit";
-            btnSubmit.value = "Add Player";
+            btnSubmit.textContent = "Add Player";
         form.appendChild(btnSubmit);
 
         return form;
@@ -379,7 +379,7 @@ const display = (function(){
 
         
         
-        const btnStartGame = _newElement('div', 'button start-game-button no-display');
+        const btnStartGame = _newElement('button', 'button start-game-button no-display');
             btnStartGame.textContent = "New Game";
             btnStartGame.addEventListener('click', game.newGame)
             optionsPanel.appendChild(btnStartGame);
