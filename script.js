@@ -20,6 +20,18 @@ const game = (function () {
     const _winningRun = 3;
     const _maxGameSize = 16;
 
+    const _checkForDraw = function () {
+        let claimedFields = 0;
+
+        _players.forEach(function(player) {
+            claimedFields = claimedFields + player.fields.length;
+        })
+
+        if (claimedFields >= _boardHeight * _boardWidth) {return true;}
+        return false;
+
+    }
+    
     const _checkForRun = function (clickedCell,cohort,winningRun) {
         // Vectors are the directions that need to be checked
         const _vectors = [[1,0],[1,1],[0,1],[-1,1]];
@@ -77,6 +89,9 @@ const game = (function () {
         if (arrWinners.length > 0) {
             display.markWinners(arrWinners);
             over = true;
+        } else if (_checkForDraw()) {
+            _setActivePlayer(null);
+            display.showDraw();
         } else {
             _nextPlayer();
         }
@@ -118,8 +133,11 @@ const game = (function () {
         _players.forEach(function(player) {
             player.tile.classList.remove('active-player');
         })
-        player.tile.classList.add('active-player');
         _activePlayer = player;
+
+        if (player) {
+            player.tile.classList.add('active-player');
+        }
     }
 
     /* Clear
@@ -371,6 +389,10 @@ const display = (function(){
         }
     };
 
+    const showDraw = function () {
+        console.log("draw");
+    }
+
     const submitNewPlayer = function (e) {
         const form = e.srcElement;
         const name = form[0].value;
@@ -427,6 +449,7 @@ const display = (function(){
         markCell,
         markWinners,
         renderGameBoard,
+        showDraw,
         submitForm: submitNewPlayer,
     }
 })();
