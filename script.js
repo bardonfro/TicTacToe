@@ -1,26 +1,17 @@
 'use strict'
 
-// DOM Elements
-const boardWrapper = document.querySelector('#board-wrapper');
-
-// Event listeners for buttons
-const btnReset = {};
-
-
 //Module
 const game = (function () {
-    let _boardWidth = 3;
+    let _activePlayer = {};
     let _boardHeight = 3;
-    let _players = [];
+    let _boardWidth = 3;
     let _numOfPlayers = 2;
     let over = false;
+    let _players = [];
     let playerSymbols = ["X", "O", "+", "*", "#", "@"];
     let ready = false;
-    let _activePlayer = {};
+    let _winningRun = 3;
     
-    const _winningRun = 3;
-    const _maxGameSize = 16;
-
     const _checkForDraw = function () {
         let claimedFields = 0;
 
@@ -33,8 +24,13 @@ const game = (function () {
 
     }
     
-    const _checkForRun = function (clickedCell,cohort,winningRun) {
-        // Vectors are the directions that need to be checked
+    /* Checks for a winning run
+        -Input: clicked cell, array of cells previously claimed, integer of the length of a winning run
+        -Return: If the clicked cell makes a winning run, return is an array of the winning cells.
+        -If the clicked cell is not part of a winning run, return is an empty array.
+    */
+    const _checkForRun = function (clickedCell,playersCells,winningRun) {
+        // Vectors are the directions that need to be checked (will check both directions on a given line)
         const _vectors = [[1,0],[1,1],[0,1],[-1,1]];
         
         // A place to put winning cells
@@ -45,23 +41,25 @@ const game = (function () {
             return [vector[0] * -1, vector[1] * -1];
         }
     
-        // Checks if the next cell in the line is part of the cohort
+        // Checks if the next cell in the line is part of the set of cells already claimed by the player
         const _isNextClaimed = function (current, vector) {
-            let next = cohort.filter(function(claimed) {
+            let next = playersCells.filter(function(claimed) {
                 return claimed.x === current.x + vector[0] &&
                 claimed.y === current.y + vector[1];
             })
             return next[0];
         }
     
-        // For a given vector, what is the length of the run?
+        // For a given vector, what is the length of the run in both directions?
         const _checkLine = function(vector) {
             let current = clickedCell;
             let line = [];
+            // Moves backward on the line to start at the beginning
             while (_isNextClaimed(current, _invert(vector))) {
                 current = _isNextClaimed(current, _invert(vector));
             }
-    
+            
+            //Moves forward on the line and adds claimed cells to the line array until it reaches an unclaimed cell
             while (current) {
                 line.push(current);
                 current = _isNextClaimed(current, vector);
@@ -79,9 +77,18 @@ const game = (function () {
             
         });
     return _winners;
-    
     }
 
+    /* Claims a field for the player and calculates game result
+        -Input: object with properties x and y, representing coordinates of clicked cell
+        -Return: undefined
+        -Operation: 
+            -Adds the cell to the players array
+            -Tells the display to mark the cell as claimed
+            -Checks for a run
+            -Checks for a draw
+            -If game is not over, advances the _activePlayer to the next player
+    */
     const claimField = function(field) {
         _activePlayer.fields.push(field);
         display.markCell(field,_activePlayer.symbol)
@@ -105,7 +112,7 @@ const game = (function () {
         })
        display.renderGameBoard(_boardWidth,_boardHeight);
        _setActivePlayer(_players[0]);
-       over = false;
+       game.over = false;
     }
 
     const newPlayer =  function (name, symbol, tile) {
@@ -118,6 +125,7 @@ const game = (function () {
         }
     }
 
+    // Makes the next player the active player
     const _nextPlayer = function() {
         const current = _players[0];
         _players = _players.slice(1);
@@ -144,20 +152,6 @@ const game = (function () {
         }
     }
 
-    /* Clear
-        - Clear fields and players arrays
-        - Signal the display to clear
-    */
-   const _clearGame = function () {
-       //clears game
-   }
-
-    /* Check for a draw
-        - Returns true if all fields have a player
-        - Returns fals if not all fields have a pl;ayer
-
-    
-    */
    return {
     claimField,
     newGame,
@@ -189,6 +183,8 @@ const display = (function(){
 
     const _clickNewGame = function () {
         game.newGame();
+
+        //Required for player-tile.winner
         document.querySelectorAll('.winner').forEach(function(el) {
             el.classList.remove('winner');
         })
@@ -318,7 +314,9 @@ const display = (function(){
         return tile;
     };
 
-
+    /* Removes a player symbol from the remaining player(s) tiles option list
+        when it is selected by another player
+    */
     const _removeSymbolOption = function (sym) {
         const options = document.querySelectorAll('.player-symbol-choice');
         options.forEach(function(element) {
@@ -331,7 +329,9 @@ const display = (function(){
     
     const renderGameBoard = function(width,height) {
         if (width > _maxGameSize || height > _maxGameSize) {return;}
-
+        
+        const boardWrapper = document.querySelector('#board-wrapper');
+        
         boardWrapper.textContent = "";            
         _cells = [];
 
@@ -352,27 +352,16 @@ const display = (function(){
                 _cells.push(cell);
             }
         }
-        game.over = false;
     }
 
     const _renderGameOptions = function () {
         const optionsPanel = _newElement('div', 'options-panel');
         document.querySelector('#options-wrapper').appendChild(optionsPanel);
 
-        const numberOfPlayersWrapper = _newElement('div', 'options-wrapper');
-            //optionsPanel.appendChild(numberOfPlayersWrapper);
-            const numLabel = _newElement('label', '');
-                numLabel.htmlFor = "number-players"
-                numLabel.textContent = "Number of Players";
-                numberOfPlayersWrapper.appendChild(numLabel);
-            const numSelect = _newElement('select','num-players-select');
-                //Unfinished
-
-
-            const btnStartGame = _newElement('button', 'button start-game-button no-display');
-            btnStartGame.textContent = "New Game";
-            btnStartGame.addEventListener('click', _clickNewGame)
-            optionsPanel.appendChild(btnStartGame);
+        const btnStartGame = _newElement('button', 'button start-game-button no-display');
+        btnStartGame.textContent = "New Game";
+        btnStartGame.addEventListener('click', _clickNewGame)
+        optionsPanel.appendChild(btnStartGame);
     }
 
     const _renderPlayerTiles = function (num) {
@@ -384,6 +373,7 @@ const display = (function(){
         }
     };
 
+    //Possible future development
     const showDraw = function () {
         console.log("draw");
     }
